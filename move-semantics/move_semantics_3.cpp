@@ -47,7 +47,23 @@ public:
         return *this;
     }
 
-    // TODO: move semantics
+    Data(Data&& other)
+        : name_{std::move(other.name_)}
+        , data_{std::exchange(other.data_, nullptr)}
+        , size_{std::exchange(other.size_, 0)}
+    {
+        std::cout << "Data(" << name_ << ": mv)\n";
+    }
+
+    Data& operator=(Data&& other)
+    {
+        Data temp = std::move(other);
+        swap(temp);
+
+        std::cout << "Data=(" << name_ << ": mv)\n";
+        return *this;
+    }
+
 
     ~Data()
     {
@@ -91,8 +107,51 @@ Data create_data_set()
 
 TEST_CASE("Data & move semantics")
 {
-    Data ds1{"ds1", {1, 2, 3, 4, 5}};
+    Data ds1 = create_data_set();    
 
-    Data backup = ds1; // copy
+    Data backup = std::move(ds1); // move
     helpers::print(backup, "backup");
+}
+
+struct SuperDataSet
+{
+    std::string name;
+    Data dataset;
+    std::vector<double> numbers;
+
+    SuperDataSet(std::string n, Data ds, std::vector<double> nmbs)
+        : name{std::move(n)}, dataset{std::move(ds)}, numbers{std::move(nmbs)}
+    {}
+
+    // ~SuperDataSet() = default;
+    // SuperDataSet(SuperDataSet&&) = default;
+    // SuperDataSet& operator=(SuperDataSet&&) = default;
+    // SuperDataSet(const SuperDataSet&) = default;
+    // SuperDataSet& operator=(const SuperDataSet&) = default;
+};
+
+namespace Legacy
+{
+    SuperDataSet* create_sds()
+    {
+        SuperDataSet* ptr = new SuperDataSet({"SDS", Data{"data", {1, 2, 3, 4, 5}}, std::vector{1.0, 2.0, 3.1}});
+
+        return ptr;
+    }
+}
+
+SuperDataSet create_sds()
+{
+    std::vector<double> large_vec(1'000'000);
+    return SuperDataSet{"sds", Data{"ds", {1, 2, 3}}, std::move(large_vec)};
+}
+
+TEST_CASE("SuperDataSet")
+{
+    SuperDataSet sds1{"SDS", Data{"data", {1, 2, 3, 4, 5}}, std::vector{1.0, 2.0, 3.1}};
+    SuperDataSet sds2 = sds1;
+
+    SuperDataSet target = std::move(sds1);
+
+    SuperDataSet large_sds = create_sds();
 }
