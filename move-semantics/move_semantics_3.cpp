@@ -47,7 +47,7 @@ public:
         return *this;
     }
 
-    Data(Data&& other)
+    Data(Data&& other) noexcept
         : name_{std::move(other.name_)}
         , data_{std::exchange(other.data_, nullptr)}
         , size_{std::exchange(other.size_, 0)}
@@ -65,7 +65,7 @@ public:
     }
 
 
-    ~Data()
+    ~Data() noexcept
     {
         delete[] data_;
     }
@@ -77,22 +77,22 @@ public:
         std::swap(size_, other.size_);
     }
 
-    iterator begin()
+    iterator begin() noexcept
     {
         return data_;
     }
 
-    iterator end()
+    iterator end() noexcept
     {
         return data_ + size_;
     }
 
-    const_iterator begin() const
+    const_iterator begin() const noexcept
     {
         return data_;
     }
 
-    const_iterator end() const
+    const_iterator end() const noexcept
     {
         return data_ + size_;
     }
@@ -100,9 +100,50 @@ public:
 
 Data create_data_set()
 {
-    Data ds{"data-set-one", {54, 6, 34, 235, 64356, 235, 23}};
+    static int id_seed = 0;
+    const int id = ++id_seed;
+
+    Data ds{"data-set#" + std::to_string(id), {54, 6, 34, 235, 64356, 235, 23}};
 
     return ds;
+}
+
+void unsafe_foo()
+{}
+
+
+int safe_foo() noexcept
+{
+    std::vector vec = {1, 2, 3};
+    try
+    {
+        return vec.at(10);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return 0;
+    }
+    
+    return 42;
+}
+
+TEST_CASE("noexcept")
+{
+    std::vector<Data> vec;    
+
+    for(int i = 0; i < 10; ++i)
+    {
+        vec.push_back(create_data_set());
+        std::cout << "-------\n";
+    }    
+
+    static_assert(not noexcept(unsafe_foo()));
+    static_assert(noexcept(safe_foo()));
+}
+
+void weird() noexcept(noexcept(safe_foo()))
+{
 }
 
 TEST_CASE("Data & move semantics")
