@@ -59,3 +59,12 @@ TEST_CASE("using gadget")
     use(cg);
     use(Gadget{3, "temporary gadget"});
 }
+
+TEST_CASE("push_back vs. emplace_back")
+{
+    std::vector<Gadget> gadgets;
+
+    gadgets.push_back(Gadget{1, "ipad"});
+    gadgets.emplace_back(Gadget{1, "ipad"});
+    gadgets.emplace_back(1, "smartwatch");
+}
