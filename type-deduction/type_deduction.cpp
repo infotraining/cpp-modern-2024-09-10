@@ -154,6 +154,15 @@ decltype(auto) call(F f, Args&&... args)
     return f(std::forward<Args>(args)...);
 }
 
+namespace Cpp20
+{
+    decltype(auto) call(auto f, auto&&... args)
+    {
+        std::cout << "Calling a function with " << sizeof...(args) << "arguments\n";
+        return f(std::forward<decltype(args)>(args)...);
+    }
+}
+
 // template <typename F, typename Arg1, typename Arg2>
 // decltype(auto) call(F f, Arg1&& arg1, Arg2&& arg2) 
 // {
@@ -190,7 +199,7 @@ TEST_CASE("calling a function")
     auto result1 = call(square, 42);
 
     int x = 2;
-    auto result2 = call(add, x, 3);
+    auto result2 = call(add, x, 3.44);
 
     auto local_f = [](int a) -> double { return a * a; };
 
