@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <catch2/catch_test_macros.hpp>
 
 
@@ -146,16 +147,28 @@ auto multiply(const T& a, const T& b) // -> decltype(a * b)
     return a * b;
 }
 
-template <typename F, typename Arg>
-decltype(auto) call(F f, Arg arg) 
+template <typename F, typename... Args>
+decltype(auto) call(F f, Args&&... args) 
 {
-    std::cout << "Calling a function\n";
-    return f(arg);
+    std::cout << "Calling a function with " << sizeof...(Args) << "arguments\n";
+    return f(std::forward<Args>(args)...);
 }
+
+// template <typename F, typename Arg1, typename Arg2>
+// decltype(auto) call(F f, Arg1&& arg1, Arg2&& arg2) 
+// {
+//     std::cout << "Calling a function\n";
+//     return f(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2));
+// }
 
 int square(int a)
 {
     return a * a;
+}
+
+int add(int a, int b)
+{
+    return a + b;
 }
 
 auto describe(int n)
@@ -174,7 +187,10 @@ decltype(auto) get_nth(std::vector<T>& vec, size_t n)
 
 TEST_CASE("calling a function")
 {
-    auto caller = call(square, 42);
+    auto result1 = call(square, 42);
+
+    int x = 2;
+    auto result2 = call(add, x, 3);
 
     auto local_f = [](int a) -> double { return a * a; };
 
@@ -189,4 +205,22 @@ TEST_CASE("calling a function")
     std::vector<bool> flags = {0, 1, 1, 0};
     get_nth(flags, 1) = false;
     REQUIRE(flags == std::vector<bool>{0, 0, 1, 0});
+}
+
+TEST_CASE("generic lambda")
+{
+    auto cmp_by_value = [](auto a, auto b) { 
+        return *a < *b;
+    };
+
+    std::set<std::shared_ptr<int>, decltype(cmp_by_value)> mset(cmp_by_value);
+
+    mset.insert(std::make_shared<int>(13));
+    mset.insert(std::make_shared<int>(3));
+    mset.insert(std::make_shared<int>(43));
+    mset.insert(std::make_shared<int>(773));
+    mset.insert(std::make_shared<int>(11));
+
+    for(auto ptr : mset)
+        std::cout << *ptr << "\n";
 }

@@ -68,6 +68,12 @@ namespace Explain
     private:
         T* ptr_;
     };
+
+    template <typename T, typename... TArgs>
+    unique_ptr<T> make_unique(TArgs&&... args)
+    {
+        return unique_ptr<T>(new T(std::forward<Args>(args)...));
+    } 
 } // namespace Explain
 
 Explain::unique_ptr<Helpers::Gadget> create_gadget()
@@ -83,7 +89,7 @@ TEST_CASE("move semantics - unique_ptr")
 {    
     using Helpers::Gadget;
 
-    Explain::unique_ptr<Gadget> ptr_g = create_gadget();
+    Explain::unique_ptr<Gadget> ptr_g = Explain::make_unique<Gadget>(1, "ipod");
     
     if (ptr_g)
     {
