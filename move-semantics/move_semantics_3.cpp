@@ -64,7 +64,6 @@ public:
         return *this;
     }
 
-
     ~Data() noexcept
     {
         delete[] data_;
@@ -98,6 +97,54 @@ public:
     }
 };
 
+namespace ModernCpp
+{
+    class Data
+    {
+        using TContainer = std::vector<int>;
+        std::string name_;
+        TContainer data_;
+
+    public:
+        using iterator = TContainer::iterator;
+        using const_iterator = decltype(data_)::const_iterator;
+
+        Data(std::string name, std::initializer_list<int> list)
+            : name_{std::move(name)}
+            , data_{list}
+        {
+            std::cout << "Data(" << name_ << ")\n";
+        }
+
+        void swap(Data& other)
+        {
+            name_.swap(other.name_);
+            data_.swap(other.data_);
+        }
+
+        iterator begin() noexcept
+        {
+            return data_.begin();
+        }
+
+        iterator end() noexcept
+        {
+            return data_.end();
+        }
+
+        const_iterator begin() const noexcept
+        {
+            return data_.begin();
+        }
+
+        const_iterator end() const noexcept
+        {
+            return data_.end();
+        }
+    };
+
+} // namespace ModernCpp
+
 Data create_data_set()
 {
     static int id_seed = 0;
@@ -109,8 +156,7 @@ Data create_data_set()
 }
 
 void unsafe_foo()
-{}
-
+{ }
 
 int safe_foo() noexcept
 {
@@ -119,24 +165,24 @@ int safe_foo() noexcept
     {
         return vec.at(10);
     }
-    catch(const std::exception& e)
+    catch (const std::exception& e)
     {
         std::cerr << e.what() << '\n';
         return 0;
     }
-    
+
     return 42;
 }
 
 TEST_CASE("noexcept")
 {
-    std::vector<Data> vec;    
+    std::vector<Data> vec;
 
-    for(int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i)
     {
         vec.push_back(create_data_set());
         std::cout << "-------\n";
-    }    
+    }
 
     static_assert(not noexcept(unsafe_foo()));
     static_assert(noexcept(safe_foo()));
@@ -148,7 +194,7 @@ void weird() noexcept(noexcept(safe_foo()))
 
 TEST_CASE("Data & move semantics")
 {
-    Data ds1 = create_data_set();    
+    Data ds1 = create_data_set();
 
     Data backup = std::move(ds1); // move
     helpers::print(backup, "backup");
@@ -161,8 +207,10 @@ struct SuperDataSet
     std::vector<double> numbers;
 
     SuperDataSet(std::string n, Data ds, std::vector<double> nmbs)
-        : name{std::move(n)}, dataset{std::move(ds)}, numbers{std::move(nmbs)}
-    {}
+        : name{std::move(n)}
+        , dataset{std::move(ds)}
+        , numbers{std::move(nmbs)}
+    { }
 
     // ~SuperDataSet() = default;
     // SuperDataSet(SuperDataSet&&) = default;
@@ -179,7 +227,7 @@ namespace Legacy
 
         return ptr;
     }
-}
+} // namespace Legacy
 
 SuperDataSet create_sds()
 {

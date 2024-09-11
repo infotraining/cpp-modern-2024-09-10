@@ -4,7 +4,9 @@
 #include <numeric>
 #include <string>
 #include <vector>
+#include <map>
 #include <catch2/catch_test_macros.hpp>
+
 
 using namespace std;
 using namespace std::literals;
@@ -105,7 +107,7 @@ TEST_CASE("decltype")
     const int& cref_x = x;
     int tab[10];
 
-    SECTION("Case 1")
+    SECTION("deducing type")
     {
         decltype(x) a1 = 10;
         decltype(cx) a2 = 10;
@@ -113,4 +115,78 @@ TEST_CASE("decltype")
         decltype(cref_x) a4 = x;
         decltype(tab) a5 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     }
+
+    //std::string s = "text";
+
+    decltype(std::declval<std::string>().size()) str_size{};
+
+    std::map<int, std::string> dict = { {1, "one"}, {2, "two"}};
+    REQUIRE(dict.size() == 2);
+
+    dict[3]; // evaluated
+    REQUIRE(dict.size() == 3);
+
+    decltype(dict[4]) item = dict[2]; // non-evaluated context
+    REQUIRE(dict.size() == 3);
+}
+
+auto foobar() -> int
+{
+    return 42;
+}
+
+// int foobar()
+// {
+
+// }
+
+template <typename T>
+auto multiply(const T& a, const T& b) // -> decltype(a * b)
+{
+    return a * b;
+}
+
+template <typename F, typename Arg>
+decltype(auto) call(F f, Arg arg) 
+{
+    std::cout << "Calling a function\n";
+    return f(arg);
+}
+
+int square(int a)
+{
+    return a * a;
+}
+
+auto describe(int n)
+{
+    if (n % 2 == 0)
+        return "even"s;
+    return "odd"s;
+}
+
+template <typename T>
+decltype(auto) get_nth(std::vector<T>& vec, size_t n) 
+{
+    assert(vec.size() > n);
+    return vec[n];
+}
+
+TEST_CASE("calling a function")
+{
+    auto caller = call(square, 42);
+
+    auto local_f = [](int a) -> double { return a * a; };
+
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+    get_nth(vec, 1) = 42;
+    REQUIRE(vec == std::vector{1, 42, 3, 4, 5});
+
+    std::vector<std::string> words = {"one", "two" };
+    get_nth(words, 1) = "dwa";
+    REQUIRE(words == std::vector{"one"s, "dwa"s});
+
+    std::vector<bool> flags = {0, 1, 1, 0};
+    get_nth(flags, 1) = false;
+    REQUIRE(flags == std::vector<bool>{0, 0, 1, 0});
 }
