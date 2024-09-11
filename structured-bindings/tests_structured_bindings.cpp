@@ -59,13 +59,13 @@ TEST_CASE("Before C++17")
     vector<int> data = {4, 42, 665, 1, 123, 13};
 
     int min, max;
-    //double avg;
+    // double avg;
 
     tie(min, max, std::ignore) = calc_stats(data);
 
     REQUIRE(min == 1);
     REQUIRE(max == Catch::Approx(665));
-    //REQUIRE(avg == Catch::Approx(141.333));
+    // REQUIRE(avg == Catch::Approx(141.333));
 }
 
 struct Data
@@ -101,7 +101,7 @@ TEST_CASE("Since C++17")
 
     SECTION("struct")
     {
-        auto[id, double_value, dataset] = create_data();
+        auto [id, double_value, dataset] = create_data();
     }
 
     SECTION("how it works")
@@ -132,18 +132,81 @@ TEST_CASE("iteration over maps")
     auto [pos, was_inserted] = dict.emplace(4, "four");
     if (was_inserted)
     {
-        const auto&[key, value] = *pos;
+        const auto& [key, value] = *pos;
         std::cout << "Item (" << key << "-" << value << ") was inserted...\n";
     }
 }
 
 TEST_CASE("enumerate")
 {
-    std::vector vec = { "one", "two", "three" };
+    std::vector vec = {"one", "two", "three"};
 
-    
-    for(auto [it, index] = std::tuple{vec.begin(), 0}; it != vec.end(); ++it, ++index)
+    for (auto [it, index] = std::tuple{vec.begin(), 0}; it != vec.end(); ++it, ++index)
     {
         std::cout << index << " " << *it << "\n";
     }
+}
+
+struct Person
+{
+private:
+    auto tied() const
+    {
+        return std::tie(fname, lname, age);
+    }
+
+public:
+    std::string fname;
+    std::string lname;
+    double age;
+
+    // bool operator==(const Person& other) const
+    // {
+    //     return tied() == other.tied();
+    // }
+
+    // bool operator!=(const Person& other) const
+    // {
+    //     return !(*this==other);
+    // }
+
+    // bool operator<(const Person& other) const
+    // {
+    //     return tied() < other.tied();
+    // }
+
+    //bool operator==(const Person&) const = default;
+    auto operator<=>(const Person&) const = default;
+};
+
+TEST_CASE("comparisons")
+{
+    Person p1{"Jan", "Kowalski", 33};
+    Person p2{"Jan", "Kowalski", 33};
+    Person p3{"Jan", "Kowalski", 43};
+
+    REQUIRE(p1 == p2);
+    REQUIRE(p1 != p3); // !(p1 == p3)
+    REQUIRE(p1 < p2);
+    REQUIRE(p2 < p1);
+    REQUIRE(p2 >= p1);
+    REQUIRE(p1 <= p1);
+}
+
+struct Temp
+{
+    double value;
+
+    bool operator==(const Temp&) const = default;
+
+    auto operator<=>(const Temp& other) const
+    {
+        return std::strong_order(value, other.value);
+    }
+};
+
+TEST_CASE("Temperature comparisons")
+{
+    std::vector<Temp> vec = {Temp{54.4}, Temp{std::numeric_limits<double>::quiet_NaN()}, Temp{99.9}, {Temp{6.4}}};
+    std::ranges::sort(vec);
 }

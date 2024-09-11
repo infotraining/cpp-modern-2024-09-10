@@ -37,8 +37,10 @@ TEST_CASE("Modernizing Player class")
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// Why this function is buggy?
+
 template <typename T>
-auto foo(T&& obj)
+auto make_vector(T&& obj)
 {
     using TValue = std::remove_cvref_t<T>;
     std::vector<TValue> vec;
@@ -54,7 +56,7 @@ TEST_CASE("Bug#1")
 {
     std::string text = "Text.......................";
 
-    auto vec = foo(text);
+    auto vec = make_vector(text);
     REQUIRE(vec.front() == "Text.......................");
 
     // REQUIRE(text == "Text.......................");
@@ -79,12 +81,16 @@ struct Value
     }
 };
 
+
+
 template <typename T>
 struct Data
 {
+    T data;
+    
     void push(T&& value)
     {
-        auto data = std::forward<T>(value);
+        data = std::forward<T>(value);
     }
 };
 
@@ -93,16 +99,16 @@ TEST_CASE("Bug#2")
     SECTION("what will happen? - 1")
     {
         Data<Value> data;
+        
         Value value;
-
         data.push(std::move(value));
     }
 
     SECTION("what will happen? - 2")
     {
-        Data<Value&> data;
+        Data<Value> data;
         Value value;
 
-        data.push(value);
+        // data.push(value); // uncomment the line - why this does not compile?
     }
 }
