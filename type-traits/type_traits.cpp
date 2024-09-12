@@ -66,11 +66,56 @@ TEST_CASE("Identity")
 
 ///////////////////////////////////////////////////
 
+template <typename T>
+struct RemoveRef
+{
+    using type = T;
+};
+
+template <typename T>
+struct RemoveRef<T&>
+{
+    using type = T;
+};
+
+template <typename T>
+struct RemoveRef<T&&>
+{
+    using type = T;
+};
+
+template <typename T>
+using RemoveRef_t = typename RemoveRef<T>::type;
+
 TEST_CASE("RemoveRef")
 {
+    static_assert(IsSame_v<RemoveRef<int>::type, int>);
+
     using T1 = int&;
-    using T2 = RemoveRef<T1>;
+    using T2 = RemoveRef<T1>::type;
 
     static_assert(IsSame_v<T2, int>);
-    static_assert(IsSame_v<RemoveRef<int&&>, int>);
+    static_assert(IsSame_v<RemoveRef_t<int&&>, int>);
+}
+
+/////////////////////////////////////////////////
+
+template <typename T>
+struct IsPointer : std::false_type
+{    
+};
+
+template <typename T>
+struct IsPointer<T*> : std::true_type
+{
+};
+
+template <typename T>
+constexpr bool IsPointer_v = IsPointer<T>::value;
+
+TEST_CASE("IsPointer")
+{
+    static_assert(IsPointer<int*>::value);
+    static_assert(IsPointer<const int*>::value);
+    static_assert(!IsPointer_v<const int>);
 }
