@@ -186,7 +186,7 @@ TEST_CASE("add")
     add_to_container(mset, 42);
 
     auto lambda = [](auto item) {
-        using T = int;
+        using T = decltype(item);
         constexpr bool test = requires(T obj) { obj[0]; };
 
         return test;
