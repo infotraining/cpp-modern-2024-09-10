@@ -63,3 +63,14 @@ TEST_CASE("Identity")
     static_assert(IsSame_v<int, int>);
     static_assert(!IsSame_v<int, const int>);
 }
+
+///////////////////////////////////////////////////
+
+TEST_CASE("RemoveRef")
+{
+    using T1 = int&;
+    using T2 = RemoveRef<T1>;
+
+    static_assert(IsSame_v<T2, int>);
+    static_assert(IsSame_v<RemoveRef<int&&>, int>);
+}
