@@ -15,8 +15,8 @@ using namespace std::literals;
 /*********************
 Iterator concept
 1. iterator is dereferenceable: *iter
-2. can be pre-incremented - returns reference to iterator
-3. can be post-incremented
+2. can be pre-incremented - returns reference to iterator: ++it
+3. can be post-incremented: it++
 4. supports == and !=
 **********************/
 

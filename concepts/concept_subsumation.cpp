@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <concepts>
+#include <deque>
 #include <iostream>
 #include <map>
 #include <string>
@@ -57,7 +58,11 @@ concept Shape = requires(const T& obj)
 };
 // clang-format on
 
-// TODO: Add concept ShapeWithColor that subsumes Shape and requires getters/setters for color
+template <typename T>
+concept ShapeWithColor = Shape<T> && requires(T obj, Color color) {
+    { obj.get_color() } -> std::same_as<Color>;
+    obj.set_color(color);
+};
 
 static_assert(Shape<Rect>);
 static_assert(Shape<ColorRect>);
@@ -69,7 +74,13 @@ void render(T& shp)
     shp.draw();
 }
 
-// TODO: Add render function that accepts ShapeWithColor
+template <ShapeWithColor T>
+void render(T& shp)
+{
+    std::cout << "render<ShapeWithColor T>\n";
+    shp.set_color(Color(0, 0, 0));
+    shp.draw();
+}
 
 TEST_CASE("concept subsumation")
 {
@@ -78,4 +89,50 @@ TEST_CASE("concept subsumation")
 
     render(r);
     render(cr);
+}
+
+void use(std::random_access_iterator auto it)
+{
+    std::cout << "use(std::random_access_iterator auto it)\n";
+}
+
+void use(std::contiguous_iterator auto it)
+{
+    std::cout << "use(std::contiguous_iterator auto it)\n";
+}
+
+TEST_CASE("iterators & subsumation")
+{
+    std::vector<int> vec;
+    use(vec.begin());
+
+    std::deque<int> dq;
+    use(dq.begin());
+}
+
+class Person
+{
+    std::string name;
+    int age;
+
+public:
+    Person(std::string n, int a)
+        : name{n}
+        , age{a}
+    { }
+};
+
+struct Aggregate
+{
+    std::string name;
+    int age;
+};
+
+TEST_CASE("uniform init syntax")
+{
+    Person p1("Jan", 23);
+    Person p2{"Adam", 44};
+
+    Aggregate agg1{"Ewa", 33};
+    Aggregate agg2("Ola", 34);
 }
