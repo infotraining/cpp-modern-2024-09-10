@@ -218,7 +218,8 @@ TEST_CASE("container concepts")
 /////////////////////////////////////////////////////////////////////////////////////
 // TODO: add constraints to the algorithm
 
-template <typename TRng>
+template <std::ranges::range TRng>
+    requires std::default_initializable<std::ranges::range_value_t<TRng>>
 void zero(TRng& rng)
 {
     using TValue = std::ranges::range_value_t<TRng>;
@@ -234,6 +235,11 @@ TEST_CASE("zero")
         std::vector<int> vec = {1, 2, 3};
         zero(vec);
         CHECK(vec == std::vector{0, 0, 0});
+
+        for(int item : vec)
+        {
+            std::cout << item << " ";
+        }
     }
 
     SECTION("list<std::string>")
@@ -241,6 +247,11 @@ TEST_CASE("zero")
         std::list<std::string> lst = {"one", "two", "three"};
         zero(lst);
         CHECK(lst == std::list{""s, ""s, ""s});
+
+        for(const auto& item : lst)
+        {
+            std::cout << item << " ";
+        }
     }
 
     SECTION("vector<bool>")
