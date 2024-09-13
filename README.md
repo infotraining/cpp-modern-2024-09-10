@@ -1,5 +1,7 @@
 # Szkolenie - Modern C++ #
 
+## https://forms.gle/ydboSdZdEGyzcwA78
+
 ## Slajdy
 
 * https://infotraining.bitbucket.io/cpp-modern-autodesk/
