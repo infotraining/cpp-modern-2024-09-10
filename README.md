@@ -1,6 +1,6 @@
 # Szkolenie - Modern C++ #
 
-## https://forms.gle/ydboSdZdEGyzcwA78
+## ANKIETA - https://forms.gle/ydboSdZdEGyzcwA78
 
 ## Slajdy
 
